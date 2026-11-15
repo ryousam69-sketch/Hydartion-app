@@ -1,0 +1,11 @@
+{
+  "appId": "com.hydration.app",
+  "appName": "Hydration",
+  "webDir": "www",
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_water",
+      "iconColor": "#12806F"
+    }
+  }
+}

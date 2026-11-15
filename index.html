@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0A1A18">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Hydration</title>
+<style>
+:root{color-scheme:light dark;
+--bg:#EEF4F1;--s1:#FFFFFF;--s2:#E3EDE8;--line:#D3E0DA;--ink:#0F2B29;--mu:#4F6864;
+--w1:#52CDB2;--w2:#12806F;--act:#D9482B;--actx:#FFFFFF;--warn:#9A5B00;--warns:#9A5B0018;--ok:#12806F;--oks:#12806F18;--dng:#B73325;--tick:#FFFFFF88;--glow:#52CDB233}
+@media(prefers-color-scheme:dark){:root{--bg:#0A1A18;--s1:#112522;--s2:#183029;--line:#223D38;--ink:#E6F3EF;--mu:#8FB0A8;
+--w1:#4FD1B5;--w2:#0F7365;--act:#FF8467;--actx:#2B0E06;--warn:#F3B24C;--warns:#F3B24C1F;--ok:#4FD1B5;--oks:#4FD1B51F;--dng:#FF8E80;--tick:#0A1A1866;--glow:#4FD1B520}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:radial-gradient(90% 40% at 50% -5%,var(--glow),transparent 70%),var(--bg);background-attachment:fixed}
+body{margin:0 auto;max-width:520px;min-height:100vh;padding:max(20px,env(safe-area-inset-top)) 18px 56px;
+font:16px/1.45 "Avenir Next","SF Pro Rounded",ui-rounded,"Segoe UI Variable Text","Segoe UI",Roboto,system-ui,sans-serif;
+color:var(--ink);font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--act);outline-offset:2px}
+.m{color:var(--mu);font-size:13px}
+
+/* header */
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:4px 0 18px}
+h1{margin:0;font-size:26px;font-weight:650;letter-spacing:-.02em;line-height:1.15}
+.sub{margin-top:3px;color:var(--mu);font-size:14px}
+.pill{border:1px solid var(--line);background:var(--s1);border-radius:99px;padding:8px 14px;font-size:13.5px;font-weight:600;white-space:nowrap}
+
+/* hero: measuring-jug progress */
+.hero{padding:22px 20px 18px;border-radius:30px;background:var(--s1);border:1px solid var(--line);margin-bottom:12px}
+.big{display:flex;align-items:baseline;gap:8px}
+.big .n{font-size:68px;font-weight:300;letter-spacing:-.05em;line-height:1}
+.big .u{font-size:20px;font-weight:600;color:var(--mu)}
+.of{margin:4px 0 16px;color:var(--mu);font-size:14px}
+.tank{position:relative;height:70px;border-radius:20px;background:var(--s2);overflow:hidden;--n:12}
+.water{position:absolute;inset:0;background:linear-gradient(90deg,var(--w1),var(--w2));clip-path:polygon(0 0,0 0,0 100%,0 100%);transition:clip-path 1s cubic-bezier(.2,.8,.2,1)}
+.ticks{position:absolute;inset:0;background:linear-gradient(to left,var(--tick) 1.5px,transparent 1.5px);background-size:calc(100% / var(--n)) 38%;background-repeat:repeat-x;background-position:0 100%}
+.scale{display:flex;justify-content:space-between;margin-top:8px;font-size:12.5px;color:var(--mu)}
+.nextrow{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.nt{font-size:21px;font-weight:650;letter-spacing:-.01em;line-height:1.2}
+.ns{color:var(--mu);font-size:13.5px;margin-top:2px}
+.btn{background:var(--act);color:var(--actx);border-radius:14px;padding:12px 16px;font-weight:650;font-size:15px;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn.soft{background:var(--s2);color:var(--ink)}
+.links{display:flex;gap:18px;margin:2px 4px 22px}
+.link{color:var(--ink);font-weight:600;font-size:14px;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px;padding:6px 0}
+.link.danger{color:var(--dng)}
+
+/* assistant */
+.panel{padding:14px;border-radius:22px;background:var(--s1);border:1px solid var(--line);margin-bottom:26px}
+.ph{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.ph b{font-size:16px;font-weight:650}
+.chat{max-height:210px;overflow:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.msg{padding:9px 13px;border-radius:16px;max-width:88%;white-space:pre-wrap;font-size:14.5px;line-height:1.4}
+.msg.a{background:var(--s2);border-bottom-left-radius:5px}
+.msg.u{background:var(--ink);color:var(--bg);align-self:flex-end;border-bottom-right-radius:5px}
+.compose{display:flex;gap:8px}
+.compose input{border-radius:99px;padding-left:16px}
+.sendbtn{flex:none;width:46px;height:46px;border-radius:50%;background:var(--act);color:var(--actx);display:grid;place-items:center}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);border-radius:99px;padding:8px 13px;font-size:13.5px;white-space:nowrap}
+.chips .undo{flex:none;padding:8px 6px;font-size:13.5px;color:var(--mu);text-decoration:underline;text-underline-offset:4px;white-space:nowrap}
+
+/* plan timeline */
+.sh{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 6px}
+.sh b{font-size:19px;font-weight:650;letter-spacing:-.01em}
+.tl{list-style:none;margin:0;padding:0}
+.it{display:grid;grid-template-columns:52px 18px 1fr 44px;gap:0 10px;align-items:start}
+.tm{padding-top:13px;text-align:right;line-height:1.1}
+.tm b{display:block;font-size:16px;font-weight:650}
+.tm span{font-size:11.5px;color:var(--mu);font-weight:600}
+.rail{position:relative;align-self:stretch;display:flex;justify-content:center}
+.rail::before{content:"";position:absolute;top:0;bottom:0;width:2px;background:var(--line)}
+.it:first-child .rail::before{top:20px}
+.it:last-child .rail::before{bottom:calc(100% - 20px)}
+.rail i{position:relative;z-index:1;margin-top:15px;width:13px;height:13px;border-radius:50%;background:var(--bg);border:2px solid var(--mu)}
+.it.done .rail i{background:var(--ok);border-color:var(--ok)}
+.it.miss .rail i{border-color:var(--warn)}
+.it.next .rail i{border-color:var(--act);box-shadow:0 0 0 5px color-mix(in srgb,var(--act) 20%,transparent)}
+.body{padding:10px 0 16px;min-width:0;cursor:pointer}
+.l1{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ml{font-size:19px;font-weight:650;letter-spacing:-.01em}
+.gl{font-size:13.5px;color:var(--mu)}
+.badge{font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;background:color-mix(in srgb,var(--act) 16%,transparent);color:var(--act)}
+.badge.warn{background:var(--warns);color:var(--warn)}
+.why{font-size:14px;color:var(--mu);margin-top:1px}
+.it.done .body{opacity:.55}
+.chk{margin-top:6px;width:38px;height:38px;border-radius:50%;border:2px solid var(--line);color:transparent;display:grid;place-items:center;background:var(--s1)}
+.it.done .chk{background:var(--ok);border-color:var(--ok);color:var(--bg)}
+.it.next .chk{border-color:var(--act)}
+.chk:active{transform:scale(.9)}
+.edit{margin-top:12px;padding:14px;border-radius:16px;background:var(--s2);display:grid;gap:14px;cursor:default}
+.stepper{display:flex;align-items:center;justify-content:space-between}
+.stepper b{font-size:18px;font-weight:650}
+.sb{width:42px;height:42px;border-radius:13px;background:var(--s1);border:1px solid var(--line);font-size:22px;line-height:1}
+.empty{padding:18px 4px;color:var(--mu)}
+.addrow{display:none;gap:8px;margin:6px 0 4px}
+.pf{display:flex;justify-content:space-between;align-items:center;margin:10px 2px 26px}
+
+/* forms */
+label{display:block;font-size:13px;font-weight:600;color:var(--mu);margin-bottom:5px}
+input,select{width:100%;padding:12px 13px;border-radius:13px;border:1px solid var(--line);background:var(--s2);color:var(--ink);font:inherit;outline:none}
+input:focus,select:focus{border-color:var(--act)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* settings rows */
+details.set{border-top:1px solid var(--line)}
+details.set:last-of-type{border-bottom:1px solid var(--line)}
+details.set summary{list-style:none;display:flex;align-items:center;justify-content:space-between;padding:17px 2px;font-weight:600;cursor:pointer}
+details.set summary::-webkit-details-marker{display:none}
+details.set summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--mu);border-bottom:2px solid var(--mu);transform:rotate(45deg);transition:transform .2s;margin-right:6px}
+details.set[open] summary::after{transform:rotate(-135deg)}
+.setbody{padding:0 2px 20px}
+.setbody p{margin:0 0 12px;color:var(--mu);font-size:14px}
+.setbody ul{margin:0;padding-left:18px}.setbody li{margin:7px 0;font-size:14.5px}
+
+/* history */
+.phr{display:flex;align-items:baseline;gap:14px}
+.link.sm{font-size:13px;padding:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:2px 0 14px}
+.stats b{display:block;font-size:22px;font-weight:650;letter-spacing:-.02em;line-height:1.15}
+.stats span{font-size:12.5px;color:var(--mu)}
+.bars{position:relative;display:flex;gap:3px;height:104px;margin:4px 0 10px}
+.bars::before{content:"";position:absolute;left:0;right:0;bottom:80%;border-top:1.5px dashed var(--line);pointer-events:none}
+.bar{flex:1;min-width:0;display:flex;align-items:flex-end;padding:0;border-radius:4px}
+.bar i{display:block;width:100%;height:var(--h);min-height:3px;border-radius:4px 4px 2px 2px;background:var(--line);transition:height .6s cubic-bezier(.2,.8,.2,1)}
+.bar.hit i{background:linear-gradient(var(--w1),var(--w2))}
+.bar.part i{background:color-mix(in srgb,var(--w1) 50%,var(--s2))}
+.bar.sel i{outline:2px solid var(--act);outline-offset:2px}
+.hnote{min-height:20px;margin-bottom:12px}
+
+/* alert banner */
+#banner{position:fixed;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));max-width:496px;margin:auto;background:var(--act);color:var(--actx);border-radius:22px;padding:18px;display:none;z-index:20;box-shadow:0 16px 44px #0007}
+#banner .bt{font-size:19px;font-weight:700}
+#banner .bs{opacity:.85;font-size:14px;margin-top:2px}
+#banner .br{display:flex;gap:8px;margin-top:14px}
+#banner button{background:var(--actx);color:var(--act);padding:11px 16px;border-radius:13px;font-weight:700}
+#banner button.s{background:transparent;color:var(--actx);border:1px solid color-mix(in srgb,var(--actx) 40%,transparent)}
+
+@media(max-width:360px){.big .n{font-size:56px}.it{grid-template-columns:46px 16px 1fr 42px;gap:0 8px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+</style>
+</head>
+<body>
+<div id="banner" role="alert"></div>
+
+<header class="top">
+  <div>
+    <h1 id="greet">Hydration</h1>
+    <div class="sub" id="dateinfo"></div>
+  </div>
+  <button id="notif" class="pill">Turn on alerts</button>
+</header>
+
+<section class="hero">
+  <div class="big"><span class="n" id="drunk">0</span><span class="u">ml</span></div>
+  <div class="of">of <span id="goalv">3000</span> ml today · <span id="left"></span></div>
+  <div class="tank" id="tank"><div class="water" id="water"></div><div class="ticks"></div></div>
+  <div class="scale"><span>0</span><span id="glassct"></span><span id="goalL">3 L</span></div>
+  <div class="nextrow">
+    <div>
+      <div class="nt" id="nexttime">–</div>
+      <div class="ns" id="nextsub"></div>
+    </div>
+    <button class="btn" id="extra">Log a glass</button>
+  </div>
+</section>
+
+<div class="links">
+  <button class="link" id="rebal">Rebalance the rest of today</button>
+  <button class="link" onclick="toggleAdd()">Add a reminder</button>
+</div>
+
+<section class="panel">
+  <div class="ph"><b>Assistant</b><span class="phr"><span class="m" id="aimode">Offline mode</span><button class="link sm" id="clearchat">Delete chat</button></span></div>
+  <div class="chat" id="chat"></div>
+  <div class="compose">
+    <input id="chatin" placeholder="Tell me about your day" autocomplete="off">
+    <button id="send" class="sendbtn" aria-label="Send"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+  </div>
+  <div class="chips">
+    <button class="chip" data-t="I'm travelling from 6pm to 9pm">I'm travelling</button>
+    <button class="chip" data-t="Move lunch to 2pm">Move lunch</button>
+    <button class="chip" data-t="Hot day, drink more">Hot day</button>
+    <button class="chip" data-t="Skip the next reminder">Skip next</button>
+    <button class="chip" data-t="I'm travelling tomorrow from 6am to 2pm">Trip tomorrow</button>
+    <button class="undo" id="undoai">Undo last change</button>
+  </div>
+</section>
+
+<div class="sh"><b>Today's plan</b><span class="m" id="plantotal"></span></div>
+<ul class="tl" id="slots"></ul>
+<div class="addrow" id="addrow">
+  <input type="time" id="addT" value="15:00" aria-label="Time">
+  <input type="number" id="addM" value="250" step="50" min="50" max="500" aria-label="Amount in ml">
+  <button class="btn" onclick="addSlot()">Add</button>
+</div>
+<div class="pf">
+  <span class="m">Tap a reminder to change it</span>
+  <button class="link" id="saveBase">Use as my daily plan</button>
+</div>
+
+<section class="panel">
+  <div class="ph"><b>Last 30 days</b><span class="m" id="histrange"></span></div>
+  <div class="stats">
+    <div><b id="stAvg">–</b><span>average a day</span></div>
+    <div><b id="stHit">–</b><span>days goal reached</span></div>
+    <div><b id="stStreak">–</b><span>day streak</span></div>
+  </div>
+  <div class="bars" id="bars"></div>
+  <div class="m hnote" id="barinfo"></div>
+  <button class="link danger sm" id="clearhist">Delete progress history</button>
+</section>
+
+<details class="set">
+  <summary>Routine and goal</summary>
+  <div class="setbody">
+    <div class="grid">
+      <div><label>Wake up</label><input type="time" id="wake" value="08:00"></div>
+      <div><label>Leave home</label><input type="time" id="leave" value="08:30"></div>
+      <div><label>Reach office</label><input type="time" id="arrive" value="09:00"></div>
+      <div><label>Leave office</label><input type="time" id="offout" value="18:00"></div>
+      <div><label>Reach home</label><input type="time" id="home" value="18:30"></div>
+      <div><label>Sleep</label><input type="time" id="sleep" value="23:00"></div>
+      <div><label>Breakfast</label><input type="time" id="bfast" value="08:15"></div>
+      <div><label>Lunch</label><input type="time" id="lunch" value="13:00"></div>
+      <div><label>Dinner</label><input type="time" id="dinner" value="20:00"></div>
+      <div><label>Daily goal (ml)</label><input type="number" id="goal" value="3000" step="100"></div>
+      <div><label>Minutes between sips</label><input type="number" id="gap" value="90" step="15" min="45"></div>
+      <div><label>Glass size (ml)</label><input type="number" id="glass" value="250" step="50"></div>
+    </div>
+    <div style="margin-top:16px"><button class="btn" id="regen">Rebuild my plan</button></div>
+    <p class="m" style="margin-top:10px">Changing a time or amount above doesn't touch your plan until you rebuild it.</p>
+  </div>
+</details>
+
+<details class="set">
+  <summary>AI assistant</summary>
+  <div class="setbody">
+    <p>Without a key, the assistant understands simple commands offline. With your own API key it understands any message. The key stays in this browser and goes only to the provider you pick. Use a key with a low spending limit, and never paste it into a shared file or chat.</p>
+    <div class="grid">
+      <div><label>Provider</label><select id="prov"><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option></select></div>
+      <div><label>Model (optional)</label><input id="model" placeholder="gemini-2.5-flash" autocomplete="off"></div>
+    </div>
+    <label style="margin-top:12px">API key</label>
+    <input type="password" id="apikey" placeholder="Paste your key" autocomplete="off">
+    <div style="display:flex;gap:16px;align-items:center;margin-top:14px"><button class="btn" id="savekey">Save key</button><button class="link" id="clearkey">Remove key</button></div>
+  </div>
+</details>
+
+<details class="set" id="batt" style="display:none">
+  <summary>Keep reminders reliable</summary>
+  <div class="setbody">
+    <p>Reminders are set with Android's alarm system, so they ring even when the app is closed. Some phones stop apps to save battery, so do these once:</p>
+    <ul>
+      <li>Open Settings, then Apps, then Hydration, then Battery, and choose Unrestricted (or "No restrictions").</li>
+      <li>On Xiaomi, Oppo, Vivo, Realme, Infinix and Tecno phones, also turn on Autostart for Hydration.</li>
+      <li>If Android asks about "Alarms &amp; reminders", allow it.</li>
+      <li>Open the app at least once a week. It schedules the next 7 days each time you open it.</li>
+    </ul>
+  </div>
+</details>
+
+<details class="set">
+  <summary>Why these times</summary>
+  <div class="setbody">
+    <ul>
+      <li>A glass right after waking, then one about 30 minutes before lunch and dinner. Studies found 300–500 ml before a meal reduced appetite, mostly in older adults.</li>
+      <li>Smaller sips at your desk. The body absorbs about 0.8–1 L an hour, so no reminder is above 500 ml.</li>
+      <li>Big drinks stop about 2 hours before sleep. The bedtime sip stays small so it doesn't wake you.</li>
+      <li>No reminders while you commute. Missed water moves to the rest of the day.</li>
+      <li>Drink more on hot days, after workouts and when you're ill. Pale-yellow urine is a good guide. If you have a kidney or heart condition, ask your doctor about a 3 L target.</li>
+    </ul>
+  </div>
+</details>
+
+
+<!-- ================= PURE LOGIC (no DOM) ================= -->
+<script id="logic">
+const mins=s=>{const[a,b]=String(s||'00:00').split(':').map(Number);return a*60+(b||0)};
+const toMin=v=>typeof v==='number'?v:mins(v);
+const hhmm=x=>String(Math.floor(x/60)%24).padStart(2,'0')+':'+String(x%60).padStart(2,'0');
+const fmt=x=>{let h=Math.floor(x/60)%24,mi=x%60,ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+String(mi).padStart(2,'0')+' '+ap};
+const uid=()=>Math.random().toString(36).slice(2,8);
+const clampMl=ml=>Math.max(50,Math.min(500,Math.round((+ml||250)/50)*50));
+
+function allocate(slots,g){
+  if(!slots.length)return;
+  const tw=slots.reduce((a,x)=>a+x.w,0)||1,MIN=100;
+  const capOf=x=>x.w<=0.5?200:500; /* the before-bed sip stays small so it doesn't disturb sleep */
+  slots.forEach(x=>x.ml=Math.min(capOf(x),Math.max(MIN,Math.round(g*x.w/tw/50)*50)));
+  let diff=g-slots.reduce((a,x)=>a+x.ml,0),guard=0;
+  const order=[...slots].sort((a,b)=>b.w-a.w);
+  while(Math.abs(diff)>=50&&guard++<200){
+    let moved=false;
+    for(const x of order){
+      if(diff>=50&&x.ml+50<=capOf(x)){x.ml+=50;diff-=50;moved=true}
+      else if(diff<=-50&&x.ml-50>=MIN){x.ml-=50;diff+=50;moved=true}
+      if(Math.abs(diff)<50)break;
+    }
+    if(!moved)break;
+  }
+}
+
+function generate(s,goal){
+  const W=mins(s.wake),SL=mins(s.sleep),gap=Math.max(45,+s.gap||90);
+  const L=mins(s.leave),A=mins(s.arrive),O=mins(s.offout),H=mins(s.home);
+  const slots=[];
+  const near=(t,d=40)=>slots.some(x=>Math.abs(x.t-t)<d);
+  const inCommute=t=>(t>=L&&t<A)||(t>=O&&t<H);
+  const add=(t,w,why,force)=>{if(t<W||t>SL)return;if(!force&&(near(t)||inCommute(t)))return;slots.push({id:uid(),t,w,why})};
+  add(W,2,'Wake-up glass: rehydrate after sleep',true);
+  add(mins(s.bfast)-30,1.5,'30 min before breakfast');
+  add(mins(s.lunch)-30,1.5,'30 min before lunch: helps you feel fuller');
+  add(mins(s.dinner)-30,1.5,'30 min before dinner: last big drink');
+  add(H+5,1.2,'Reached home: top up after the commute');
+  for(let t=W+gap;t<=SL-120;t+=gap) add(t,1,(t>=A&&t<O)?'Desk sip: small and steady':'Evening sip');
+  add(SL-45,0.5,'Small sip before bed (keeps sleep undisturbed)',true);
+  slots.sort((a,b)=>a.t-b.t);
+  allocate(slots,goal||+s.goal||3000);
+  return slots;
+}
+
+function nearest(plan,t,maxd){let b=null,bd=1e9;plan.forEach(x=>{const d=Math.abs(x.t-t);if(d<bd){bd=d;b=x}});return b&&bd<=maxd?b:null}
+
+/* T = {plan, settings, goal, extra, done:Set, now, notes:[]} ; mutates T */
+function doneSum(T){return T.plan.filter(x=>T.done.has(x.id)).reduce((a,x)=>a+x.ml,0)}
+function rebalance(T,quiet){
+  const rem=T.goal-doneSum(T)-T.extra;
+  const up=T.plan.filter(x=>!T.done.has(x.id)&&x.t>=T.now-10);
+  if(rem<=0){if(!quiet)T.notes.push('Goal already reached 🎉');return}
+  if(!up.length){T.notes.push('No reminders left in the day to spread the remaining '+rem+' ml. Add one if you can.');return}
+  allocate(up,rem);
+  const got=up.reduce((a,x)=>a+x.ml,0);
+  if(got<rem)T.notes.push('Only '+got+' of the remaining '+rem+' ml fit (max 500 ml per reminder). Add another reminder or sip a bit extra.');
+  else T.notes.push('Spread the remaining '+rem+' ml over '+up.length+' upcoming reminders.');
+}
+
+function apply(T,actions){
+  for(const a of actions||[]){
+    switch(a.type){
+      case 'add':{const t=toMin(a.time);const ml=clampMl(a.ml);T.plan.push({id:uid(),t,w:1,ml,why:a.why||'Custom reminder'});T.plan.sort((x,y)=>x.t-y.t);T.notes.push('Added '+ml+' ml at '+fmt(t));break}
+      case 'remove':{const x=nearest(T.plan,toMin(a.time),30);if(x){T.plan=T.plan.filter(y=>y!==x);T.done.delete(x.id);T.notes.push('Removed the '+fmt(x.t)+' reminder ('+x.ml+' ml)');if(a.rebalance!==false)rebalance(T,true)}else T.notes.push('Could not find a reminder near '+fmt(toMin(a.time)));break}
+      case 'move':{const x=nearest(T.plan,toMin(a.from),45);if(x){const old=x.t;x.t=toMin(a.to);
+        const twin=T.plan.find(y=>y!==x&&!T.done.has(y.id)&&Math.abs(y.t-x.t)<=15);
+        if(twin&&!T.done.has(x.id)){x.ml=Math.min(500,x.ml+twin.ml);T.plan=T.plan.filter(y=>y!==twin);T.notes.push('Moved '+fmt(old)+' → '+fmt(x.t)+' and merged it with the reminder already there');rebalance(T,true)}
+        else T.notes.push('Moved '+fmt(old)+' → '+fmt(x.t));
+        T.plan.sort((p,q)=>p.t-q.t)}else T.notes.push('Could not find a reminder near '+fmt(toMin(a.from)));break}
+      case 'set_ml':{const x=nearest(T.plan,toMin(a.time),30);if(x){x.ml=clampMl(a.ml);T.notes.push('Set '+fmt(x.t)+' to '+x.ml+' ml')}else T.notes.push('Could not find a reminder near '+fmt(toMin(a.time)));break}
+      case 'travel':{
+        const f=toMin(a.from),t=toMin(a.to);
+        const gone=T.plan.filter(x=>!T.done.has(x.id)&&x.t>=f&&x.t<=t);
+        T.plan=T.plan.filter(x=>!gone.includes(x));
+        let msg='Travel '+fmt(f)+'–'+fmt(t)+': removed '+gone.length+' reminder'+(gone.length===1?'':'s');
+        const pre=f-20;
+        if(pre>=T.now&&pre>=mins(T.settings.wake)&&!T.plan.some(x=>Math.abs(x.t-pre)<30)){T.plan.push({id:uid(),t:pre,w:1.5,ml:300,why:'Drink before you travel'});T.plan.sort((x,y)=>x.t-y.t);msg+=', added a drink before you leave'}
+        T.notes.push(msg);rebalance(T,true);break}
+      case 'rebalance':rebalance(T);break;
+      case 'set_goal':{T.goal=Math.max(1000,Math.min(6000,+a.ml||3000));T.settings.goal=T.goal;T.notes.push('Goal is now '+T.goal+' ml');rebalance(T,true);break}
+      case 'drank':{const ml=Math.max(0,+a.ml||250);T.extra+=ml;T.notes.push('Logged '+ml+' ml');break}
+      case 'boost':{const ml=+a.ml||500;T.goal+=ml;T.notes.push('Goal raised by '+ml+' ml for today');
+        const t=a.time!=null?toMin(a.time):T.now+15;
+        if(t>=T.now-5||T.now===0){T.plan.push({id:uid(),t,w:1.5,ml:400,why:'Extra water: heat / workout / illness'});T.plan.sort((x,y)=>x.t-y.t)}
+        rebalance(T,true);break}
+      case 'set_setting':{if(a.key in T.settings||['wake','leave','arrive','offout','home','sleep','bfast','lunch','dinner','gap','glass','goal'].includes(a.key)){T.settings[a.key]=String(a.value);if(a.key==='goal')T.goal=+a.value;T.notes.push('Set '+a.key+' to '+a.value)}break}
+      case 'regenerate':{
+        const done=T.plan.filter(x=>T.done.has(x.id));
+        if(T.now>0){T.extra+=doneSum(T);T.done=new Set()}
+        let np=generate(T.settings,T.goal);
+        if(T.now>0){np=np.filter(x=>x.t>=T.now);allocate(np,Math.max(0,T.goal-T.extra))}
+        T.plan=np;T.notes.push('Rebuilt the plan from your routine'+(T.now>0?' (from now on)':''));break}
+    }
+  }
+}
+
+/* ---------- offline "AI": understands common commands ---------- */
+function findTimes(text){
+  const out=[],re=/(?<![\d.])(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)?(?!\d)/gi;let m;
+  while((m=re.exec(text))){
+    const after=text.slice(m.index+m[0].length).trimStart().toLowerCase();
+    if(!m[3]&&!m[2]&&/^(ml|millilit|l\b|lit|glass|bottle|min|hour|hr|h\b|%|cup)/.test(after))continue;
+    const before=text.slice(0,m.index).trimEnd().toLowerCase();
+    if(!(m[3]||m[2]||/(\bat|\bto|\bfrom|\buntil|\btill|\bby|\baround|\bafter|\bbefore|\bbetween|\band|-|\bthan)$/.test(before)))continue;
+    let h=+m[1],mi=+(m[2]||0);if(h>24||mi>59)continue;
+    const ap=m[3]&&m[3][0].toLowerCase();
+    if(ap==='p'&&h<12)h+=12;else if(ap==='a'&&h===12)h=0;else if(!ap&&h>=1&&h<=6)h+=12;
+    out.push({t:h*60+mi,explicit:!!ap,idx:m.index});
+  }
+  const nl=/\bnoon\b/i.exec(text);if(nl)out.push({t:720,explicit:true,idx:nl.index});
+  const mn=/\bmidnight\b/i.exec(text);if(mn)out.push({t:1440,explicit:true,idx:mn.index});
+  return out.sort((a,b)=>a.idx-b.idx);
+}
+function findAmount(text){
+  let m=/(\d+(?:\.\d+)?)\s*(ml|millilit\w*)/i.exec(text);if(m)return Math.round(+m[1]);
+  m=/(\d+(?:\.\d+)?)\s*(l|lit\w*)\b/i.exec(text);if(m)return Math.round(+m[1]*1000);
+  const words={a:1,an:1,one:1,two:2,three:3,four:4};
+  m=/\b(\d+|a|an|one|two|three|four)\s*(glass|glasses|cup|cups|bottle|bottles)/i.exec(text);
+  if(m){const n=isNaN(+m[1])?words[m[1].toLowerCase()]:+m[1];return n*(/bottle/i.test(m[2])?500:250)}
+  return null;
+}
+function mealSlot(word,plan){
+  const key={wake:'wake-up',breakfast:'breakfast',lunch:'lunch',dinner:'dinner',bed:'before bed'}[word];
+  return plan.find(x=>(x.why||'').toLowerCase().includes(key))||null;
+}
+const HELP="I can understand things like:\n• I'm travelling from 6pm to 9pm\n• I'm travelling tomorrow from 6am to 2pm\n• Move lunch to 2pm / Move the 3pm one to 4\n• Add 300 ml at 4pm\n• Skip the next reminder / Remove the 5pm one\n• Hot day, drink more / I'm at the gym\n• I drank a bottle\n• Set my goal to 2.5 litres\n• From now on I sleep at 11:30pm\n(Add an API key in settings for free-form messages.)";
+
+function localParse(text,ctx){
+  const t=text.toLowerCase().trim();
+  const scope=/\btomorrow\b/.test(t)?'tomorrow':/(always|every ?day|from now on|usually|daily|permanent|from tomorrow onwards)/.test(t)?'always':'today';
+  const times=findTimes(t),amt=findAmount(t),now=ctx.now;
+  const mealWord=(/\b(wake|breakfast|lunch|dinner|bed)\b/.exec(t)||[])[1];
+  // travel
+  if(/(travel|trip|flight|journey|on the road|driving|commut|out of town|away)/.test(t)){
+    let f,to;
+    const dur=/(?:for|about|around)\s*(\d+(?:\.\d+)?)\s*(?:hours?|hrs?|h)\b/.exec(t);
+    if(times.length>=2){f=times[0].t;to=times[1].t;if(to<=f&&!times[1].explicit)to+=720;if(to<=f)to+=1440}
+    else if(times.length===1&&/(until|till|back (at|by)|return|home (at|by))/.test(t)){f=scope==='today'?now:0;to=times[0].t}
+    else if(times.length===1){f=times[0].t;to=f+(dur?Math.round(+dur[1]*60):180)}
+    else if(dur&&scope==='today'){f=now;to=now+Math.round(+dur[1]*60)}
+    if(f==null)return{reply:"Sure. From when until when will you be travelling? (e.g. “from 6pm to 9pm”)",scope,actions:[]};
+    return{reply:'Okay, planning around your travel.',scope,actions:[{type:'travel',from:f,to}]};
+  }
+  // boost
+  if(/(hot|heat|gym|workout|work out|worked out|exercise|run\b|ran\b|sweat|sick|fever|diarr|vomit|hungover)/.test(t))
+    return{reply:'Got it — raising today’s goal by 500 ml and adding an extra drink.',scope,actions:[{type:'boost',ml:amt&&amt>=200?amt:500}]};
+  // drank
+  if(/\b(drank|had|finished|just drank|downed)\b/.test(t)&&amt)return{reply:'Logged.',scope:'today',actions:[{type:'drank',ml:amt}]};
+  if(/\b(drank|had|finished)\b/.test(t)&&/(glass|bottle|cup)/.test(t))return{reply:'Logged.',scope:'today',actions:[{type:'drank',ml:amt||250}]};
+  // goal
+  if(/(goal|target)/.test(t)&&amt)return{reply:'Updating the goal.',scope,actions:[{type:'set_goal',ml:amt}]};
+  // rebalance
+  if(/(rebalance|catch up|behind|missed)/.test(t))return{reply:'Rebalancing the rest of the day.',scope:'today',actions:[{type:'rebalance'}]};
+  // move
+  const mv=/(move|shift|reschedule|change|push|delay)\s+(?:the\s+)?(.*?)\s+(?:to|at|till|until|by)\s+(.*)$/.exec(t);
+  if(mv){
+    const src=mv[2],dst=findTimes(' at '+mv[3]);
+    let from=null;
+    const w=(/\b(wake|breakfast|lunch|dinner|bed)\b/.exec(src)||[])[1];
+    if(w){const s=mealSlot(w,ctx.plan);if(s)from=s.t}
+    if(from==null){const ft=findTimes(' at '+src);if(ft.length)from=ft[0].t}
+    if(from==null&&/next/.test(src)){const s=ctx.plan.find(x=>x.t>=now&&!ctx.done.includes(x.id));if(s)from=s.t}
+    if(from!=null&&dst.length)return{reply:'Moving it.',scope,actions:[{type:'move',from,to:dst[0].t}]};
+  }
+  // remove / skip
+  if(/(remove|delete|cancel|skip|drop)/.test(t)){
+    let time=null;
+    if(/next/.test(t)){const s=ctx.plan.find(x=>x.t>=now-30&&!ctx.done.includes(x.id));if(s)time=s.t}
+    else if(mealWord){const s=mealSlot(mealWord,ctx.plan);if(s)time=s.t}
+    else if(times.length)time=times[0].t;
+    if(time!=null)return{reply:'Removing it and spreading its water over the rest.',scope,actions:[{type:'remove',time}]};
+  }
+  // add
+  if(/(add|remind|reminder|schedule|put)/.test(t)&&times.length)
+    return{reply:'Adding a reminder.',scope,actions:[{type:'add',time:times[0].t,ml:amt||250,why:'Added by you'}]};
+  // routine settings
+  const map=[[/(wake|woke|get up|got up|waking)/,'wake'],[/(go(ing)? to (sleep|bed)|sleep|bedtime)/,'sleep'],[/(leave|leaving|finish|finished|off) (the )?(office|work)|work ends?/,'offout'],[/(reach|reaching|get|getting|start|starting) (the )?(office|work)|office (at|starts?)/,'arrive'],[/(reach|reaching|get|getting|back) (at )?home|home at/,'home'],[/\blunch\b/,'lunch'],[/\bdinner\b/,'dinner'],[/\bbreakfast\b/,'bfast']];
+  if(times.length===1){
+    for(const[re,key]of map)if(re.test(t))return{reply:'Updating your routine.',scope,actions:[{type:'set_setting',key,value:hhmm(times[0].t)},{type:'regenerate'}]};
+  }
+  return{reply:HELP,scope:'today',actions:[]};
+}
+
+const ACTION_DOC=`Action types (times are "HH:MM" 24h strings):
+{"type":"add","time":"16:00","ml":300,"why":"text"}
+{"type":"remove","time":"15:00"}  (removes nearest reminder, spreads its water over the rest)
+{"type":"move","from":"13:00","to":"14:00"}
+{"type":"set_ml","time":"15:00","ml":300}
+{"type":"travel","from":"18:00","to":"21:00"}  (no reminders in that window)
+{"type":"boost","ml":500}  (hot day / workout / illness: raises goal and adds a drink)
+{"type":"rebalance"}
+{"type":"set_goal","ml":2500}
+{"type":"drank","ml":250}  (user already drank something unplanned)
+{"type":"set_setting","key":"wake|leave|arrive|offout|home|sleep|bfast|lunch|dinner|gap|glass","value":"08:00"} followed by {"type":"regenerate"}`;
+
+globalThis.WP={mins,hhmm,fmt,uid,clampMl,allocate,generate,apply,rebalance,localParse,findTimes,findAmount,ACTION_DOC,HELP};
+</script>
+
+<!-- ================= APP (DOM) ================= -->
+<script>
+/* helpers (mins, hhmm, fmt, uid, clampMl, generate, apply, localParse, ACTION_DOC, HELP) are already global from the logic block above */
+const $=id=>document.getElementById(id);
+const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes()};
+const dayStr=(off=0)=>{const d=new Date();d.setDate(d.getDate()+off);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const ld=(k,f)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const SET=['wake','leave','arrive','offout','home','sleep','bfast','lunch','dinner','goal','gap','glass'];
+const inputSettings=()=>{const s={};SET.forEach(i=>s[i]=$(i).value);return s};
+
+let base=ld('wr3_base',null),day=ld('wr3_day',null),fired=new Set(),snooze={},undoStack=[];
+
+function newDay(){
+  const T={plan:JSON.parse(JSON.stringify(base.plan)),settings:{...base.settings},goal:+base.settings.goal||3000,extra:0,done:new Set(),now:0,notes:[]};
+  const pend=ld('wr3_pend_'+dayStr(0),[]);
+  if(pend.length)apply(T,pend);
+  day={date:dayStr(0),plan:T.plan,done:[],extra:0,goal:T.goal,notes:T.notes};
+  fired=new Set();snooze={};
+}
+function init(){
+  if(!base){const s=inputSettings();base={settings:s,plan:generate(s,+s.goal)}}
+  SET.forEach(i=>{if(base.settings[i]!=null)$(i).value=base.settings[i]});
+  if(!day||day.date!==dayStr(0))newDay();
+  persist();
+}
+const persist=()=>{sv('wr3_base',base);sv('wr3_day',day);saveHist();queueSync()};
+const goal=()=>day.goal;
+const drunkTotal=()=>day.plan.filter(x=>day.done.includes(x.id)).reduce((a,x)=>a+x.ml,0)+day.extra;
+
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ICON_CHECK='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+let openId=null,waterReady=false;
+const tparts=t=>{const m=/^(\d+:\d+)\s(AM|PM)$/.exec(fmt(t));return m?[m[1],m[2]]:[fmt(t),'']};
+const glassTxt=(ml,gl)=>{const n=ml/gl,s=String(Math.round(n*10)/10);return s+(n===1?' glass':' glasses')};
+
+/* water edge: a wavy polygon, same point count every time so it animates smoothly */
+function waterClip(p){
+  const X=Math.max(0,Math.min(1,p))*100,amp=(p<=0.004||p>=0.995)?0:5,pts=['0px 0%'];
+  for(let i=0;i<=14;i++)pts.push('calc('+X.toFixed(2)+'% + '+(amp*Math.sin(i*1.15+1)).toFixed(1)+'px) '+(i/14*100).toFixed(1)+'%');
+  pts.push('0px 100%');
+  return 'polygon('+pts.join(',')+')';
+}
+function setWater(p){
+  const w=$('water');
+  if(!waterReady){waterReady=true;w.style.clipPath=waterClip(0);setTimeout(()=>{w.style.clipPath=waterClip(p)},60);return}
+  w.style.clipPath=waterClip(p);
+}
+
+function render(){
+  const nm=nowMin(),g=goal(),gl=+$('glass').value||250;
+  const nextIdx=day.plan.findIndex(x=>!day.done.includes(x.id)&&x.t>=nm-30);
+  $('slots').innerHTML=day.plan.map((x,i)=>{
+    const d=day.done.includes(x.id),late=!d&&x.t<nm-30,isN=i===nextIdx,open=openId===x.id;
+    const tp=tparts(x.t),tm=tp[0],ap=tp[1];
+    const cls='it'+(d?' done':'')+(late?' miss':'')+(isN?' next':'');
+    const badge=isN?'<span class="badge">Next</span>':late?'<span class="badge warn">Missed</span>':'';
+    const edit=open?`<div class="edit" onclick="event.stopPropagation()">
+        <div><label>Time</label><input type="time" value="${hhmm(x.t)}" onchange="editT('${x.id}',this.value)"></div>
+        <div><label>Amount</label><div class="stepper"><button class="sb" onclick="step('${x.id}',-50)" aria-label="Less water">−</button><b>${x.ml} ml</b><button class="sb" onclick="step('${x.id}',50)" aria-label="More water">+</button></div></div>
+        <button class="link danger" style="justify-self:start" onclick="del('${x.id}')">Remove this reminder</button></div>`:'';
+    return `<li class="${cls}"><div class="tm"><b>${tm}</b><span>${ap}</span></div><div class="rail"><i></i></div><div class="body" onclick="toggleEdit('${x.id}')"><div class="l1"><span class="ml">${x.ml} ml</span><span class="gl">${glassTxt(x.ml,gl)}</span>${badge}</div><div class="why">${esc(x.why||'Custom reminder')}</div>${edit}</div><button class="chk" onclick="tick('${x.id}')" aria-label="${d?'Mark as not drunk':'Mark as drunk'}">${ICON_CHECK}</button></li>`;
+  }).join('')||'<li class="empty">No reminders yet. Add one, or rebuild your plan in Routine and goal.</li>';
+
+  const dt=drunkTotal(),rem=Math.max(0,g-dt),h=new Date().getHours();
+  $('greet').textContent=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  $('dateinfo').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+  $('drunk').textContent=dt.toLocaleString('en-US');$('goalv').textContent=g.toLocaleString('en-US');
+  $('left').textContent=rem>0?rem.toLocaleString('en-US')+' ml to go':'goal reached';
+  $('tank').style.setProperty('--n',Math.max(1,Math.round(g/gl)));
+  $('glassct').textContent=(Math.round(dt/gl*10)/10)+' of '+Math.round(g/gl)+' glasses';
+  $('goalL').textContent=(Math.round(g/100)/10)+' L';
+  setWater(g?dt/g:0);
+  if(dt>=g){$('nexttime').textContent='Goal reached';$('nextsub').textContent='Nice work. Anything more is a bonus.'}
+  else if(nextIdx>=0){const x=day.plan[nextIdx];$('nexttime').textContent=fmt(x.t)+' · '+x.ml+' ml';$('nextsub').textContent=(x.why||'Custom reminder').split(':')[0]}
+  else{$('nexttime').textContent='No more reminders today';$('nextsub').textContent='Log a glass or add a reminder.'}
+  const pt=day.plan.reduce((a,x)=>a+x.ml,0);
+  $('plantotal').textContent=day.plan.length+' reminders · '+pt+' ml';
+  $('aimode').textContent=ld('wr3_key','')?'AI on':'Offline mode';
+  renderHist();
+}
+
+
+/* manual edits (today only) */
+const find=id=>day.plan.find(x=>x.id===id);
+function toggleEdit(id){openId=openId===id?null:id;render()}
+function toggleAdd(){const r=$('addrow');const open=r.style.display==='flex';r.style.display=open?'none':'flex';if(!open&&r.scrollIntoView)r.scrollIntoView({block:'center',behavior:'smooth'})}
+function tick(id){if(day.done.includes(id)){day.done=day.done.filter(x=>x!==id)}else{day.done.push(id);fired.add(id);hideBanner()}persist();render()}
+function undo(id){day.done=day.done.filter(x=>x!==id);persist();render()}
+function del(id){day.plan=day.plan.filter(x=>x.id!==id);day.done=day.done.filter(x=>x!==id);if(openId===id)openId=null;persist();render()}
+function editT(id,v){const x=find(id);if(!x||!v)return;x.t=mins(v);day.plan.sort((a,b)=>a.t-b.t);fired.delete(id);persist();render()}
+function editM(id,v){const x=find(id);if(!x)return;x.ml=clampMl(v);persist();render()}
+function step(id,d){const x=find(id);if(!x)return;x.ml=clampMl(x.ml+d);persist();render()}
+function addSlot(){day.plan.push({id:uid(),t:mins($('addT').value),w:1,ml:clampMl($('addM').value),why:'Custom reminder'});day.plan.sort((a,b)=>a.t-b.t);$('addrow').style.display='none';persist();render()}
+Object.assign(window,{tick,undo,del,editT,editM,addSlot,toggleEdit,toggleAdd,step});
+$('extra').onclick=()=>{day.extra+=(+$('glass').value||250);persist();render()};
+$('rebal').onclick=()=>{const n=commit([{type:'rebalance'}],'today');chatAdd('a',n.join('\n')||'Done.')};
+$('saveBase').onclick=()=>{if(confirm('Use today\'s reminders as your everyday plan?')){base.plan=JSON.parse(JSON.stringify(day.plan));persist();chatAdd('a','Saved. Tomorrow will start from this plan.')}};
+SET.forEach(i=>$(i).addEventListener('change',()=>{base.settings=inputSettings();persist();render()}));
+$('regen').onclick=()=>{
+  if(!confirm('Rebuild your everyday plan (and the rest of today) from these settings?'))return;
+  base.settings=inputSettings();
+  const n=commit([{type:'regenerate'}],'always');chatAdd('a',n.join('\n'));
+};
+
+/* commit actions with a scope: today | tomorrow | always */
+function commit(actions,scope){
+  undoStack.push(JSON.stringify({base,day,pend:ld('wr3_pend_'+dayStr(1),[])}));if(undoStack.length>10)undoStack.shift();
+  const notes=[];
+  if(scope==='tomorrow'){
+    const p=ld('wr3_pend_'+dayStr(1),[]);sv('wr3_pend_'+dayStr(1),p.concat(actions));
+    notes.push('Saved for tomorrow. Today’s plan is unchanged.');
+  }else{
+    const T={plan:day.plan,settings:{...base.settings},goal:day.goal,extra:day.extra,done:new Set(day.done),now:nowMin(),notes:[]};
+    apply(T,actions);
+    day.plan=T.plan;day.goal=T.goal;day.extra=T.extra;day.done=[...T.done];notes.push(...T.notes);
+    if(scope==='always'){
+      const B={plan:base.plan,settings:{...base.settings},goal:+base.settings.goal||3000,extra:0,done:new Set(),now:0,notes:[]};
+      apply(B,actions);base.plan=B.plan;base.settings={...B.settings,goal:String(B.goal)};
+      SET.forEach(i=>{if(base.settings[i]!=null)$(i).value=base.settings[i]});
+      notes.push('Also saved as your everyday routine.');
+    }
+  }
+  fired=new Set(day.done);persist();render();return notes;
+}
+$('undoai').onclick=()=>{
+  const s=undoStack.pop();if(!s)return chatAdd('a','Nothing to undo.');
+  const o=JSON.parse(s);base=o.base;day=o.day;sv('wr3_pend_'+dayStr(1),o.pend);
+  SET.forEach(i=>{if(base.settings[i]!=null)$(i).value=base.settings[i]});
+  persist();render();chatAdd('a','Undone ↩');
+};
+
+/* ---------- chat ---------- */
+let chatLog=ld('wr3_chat',[]);
+/* temp messages (typing dots, the greeting) are shown but never saved */
+function chatAdd(who,text,temp){
+  const d=document.createElement('div');d.className='msg '+who;d.textContent=text;$('chat').appendChild(d);$('chat').scrollTop=1e9;
+  if(!temp){chatLog.push({w:who,t:text});chatLog=chatLog.slice(-60);sv('wr3_chat',chatLog)}
+}
+function showChat(){
+  $('chat').innerHTML='';
+  chatLog.forEach(m=>{const d=document.createElement('div');d.className='msg '+m.w;d.textContent=m.t;$('chat').appendChild(d)});
+  if(!chatLog.length)chatAdd('a','Hi! Tell me about your day, e.g. “I’m travelling from 6pm to 9pm” or “Move lunch to 2pm”.',true);
+  $('chat').scrollTop=1e9;
+}
+let chatHist=[];
+$('clearchat').onclick=()=>{
+  if(!confirm('Delete the whole chat history on this phone?'))return;
+  chatLog=[];chatHist=[];try{localStorage.removeItem('wr3_chat')}catch(e){}showChat();
+};
+async function askClaude(text,key){
+  const sys=`You are the assistant inside a personal water-reminder app. The user chats to change their reminder schedule.
+Now: ${new Date().toString()} (local time ${hhmm(nowMin())}). Today is ${dayStr(0)}, tomorrow is ${dayStr(1)}.
+Daily goal today: ${day.goal} ml. Drunk so far: ${drunkTotal()} ml.
+Routine settings: ${JSON.stringify(base.settings)}
+Today's reminders:
+${day.plan.map(x=>`${hhmm(x.t)} ${x.ml}ml ${day.done.includes(x.id)?'[DONE] ':''}${x.why||''}`).join('\n')}
+
+Reply with ONLY a JSON object: {"reply":"short friendly text","scope":"today"|"tomorrow"|"always","actions":[...]}
+scope: "today" for today only, "tomorrow" if they say tomorrow, "always" only if they say it's permanent (every day, from now on).
+Rules: keep each reminder at most 500 ml. Skip reminders while the user is travelling and no drinking is possible. Rebalance the day when water is removed so the goal is still met. Never give medical advice beyond hydration basics. If the request is unclear, ask one short question and return an empty actions list.
+${ACTION_DOC}`;
+  const msgs=[...chatHist.slice(-6),{role:'user',content:text}];
+  const prov=ld('wr3_prov','gemini'),model=ld('wr3_model','');
+  let raw;
+  if(prov==='gemini'){
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model||'gemini-2.5-flash')+':generateContent?key='+encodeURIComponent(key),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:msgs.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]})),generationConfig:{responseMimeType:'application/json',maxOutputTokens:2048,temperature:0.2}})});
+    if(!r.ok)throw new Error('Gemini '+r.status);
+    const data=await r.json();raw=(((data.candidates||[])[0]||{}).content&&data.candidates[0].content.parts||[]).map(p=>p.text||'').join('');
+  }else{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:model||'claude-haiku-5-5',max_tokens:900,system:sys,messages:msgs})});
+    if(!r.ok)throw new Error('Claude '+r.status);
+    const data=await r.json();raw=(data.content||[]).map(c=>c.text||'').join('');
+  }
+  const j=JSON.parse(raw.slice(raw.indexOf('{'),raw.lastIndexOf('}')+1));
+  chatHist.push({role:'user',content:text},{role:'assistant',content:raw});
+  const okTypes=['add','remove','move','set_ml','travel','boost','rebalance','set_goal','drank','set_setting','regenerate'];
+  j.actions=(j.actions||[]).filter(a=>a&&okTypes.includes(a.type));
+  if(!['today','tomorrow','always'].includes(j.scope))j.scope='today';
+  return j;
+}
+async function handle(text){
+  if(!text.trim())return;
+  chatAdd('u',text);$('chatin').value='';
+  const ctx={now:nowMin(),plan:day.plan,done:day.done};
+  let res,key=ld('wr3_key','');
+  if(key){
+    try{chatAdd('a','…',true);res=await askClaude(text,key);$('chat').lastChild.remove()}
+    catch(e){$('chat').lastChild.remove();chatAdd('a','The AI was unreachable ('+e.message+'). Check your key and model name. Using offline mode for this message.');res=localParse(text,ctx)}
+  }else res=localParse(text,ctx);
+  if(res.actions&&res.actions.length){
+    const notes=commit(res.actions,res.scope);
+    chatAdd('a',(res.reply&&res.reply!==HELP?res.reply+'\n':'')+notes.map(n=>'• '+n).join('\n'));
+  }else chatAdd('a',res.reply||HELP);
+}
+$('send').onclick=()=>handle($('chatin').value);
+$('chatin').addEventListener('keydown',e=>{if(e.key==='Enter')handle($('chatin').value)});
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{$('chatin').value=c.dataset.t;$('chatin').focus()});
+$('prov').value=ld('wr3_prov','gemini');$('model').value=ld('wr3_model','');
+$('prov').onchange=()=>{$('model').placeholder=$('prov').value==='gemini'?'gemini-2.5-flash':'claude-haiku-5-5'};$('prov').onchange();
+$('savekey').onclick=()=>{const k=$('apikey').value.trim();if(!k)return;sv('wr3_key',k);sv('wr3_prov',$('prov').value);sv('wr3_model',$('model').value.trim());$('apikey').value='';render();chatAdd('a','AI is on ('+($('prov').value==='gemini'?'Gemini':'Claude')+'). Try a free-form message.')};
+$('clearkey').onclick=()=>{try{localStorage.removeItem('wr3_key')}catch(e){}render();chatAdd('a','Key removed. Back to offline mode.')};
+
+/* ---------- 30-day history ---------- */
+let selDay=null,histSig='';
+function saveHist(){
+  const h=ld('wr3_hist',{}),keep=new Set();
+  for(let i=0;i<45;i++)keep.add(dayStr(-i));
+  h[day.date]={ml:drunkTotal(),goal:day.goal};
+  Object.keys(h).forEach(k=>{if(!keep.has(k))delete h[k]});
+  sv('wr3_hist',h);
+}
+function histPoints(){
+  const h=ld('wr3_hist',{}),pts=[];
+  for(let i=29;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    pts.push({d,today:i===0,r:i===0?{ml:drunkTotal(),goal:day.goal}:(h[dayStr(-i)]||null)});
+  }
+  return pts;
+}
+const dLabel=d=>d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
+const n0=v=>Number(v).toLocaleString('en-US');
+const dayText=p=>dLabel(p.d)+(p.today?' (today)':'')+': '+(p.r?n0(p.r.ml)+' of '+n0(p.r.goal)+' ml':'no data');
+function renderHist(){
+  const pts=histPoints(),sig=JSON.stringify(pts.map(p=>p.r))+'|'+selDay;
+  if(sig===histSig)return;histSig=sig;
+  const tracked=pts.filter(p=>p.r),past=tracked.filter(p=>!p.today),src=past.length?past:tracked;
+  const avg=src.length?Math.round(src.reduce((a,p)=>a+p.r.ml,0)/src.length/10)*10:0;
+  const hit=tracked.filter(p=>p.r.ml>=p.r.goal).length;
+  let streak=0;
+  for(let i=29;i>=0;i--){const r=pts[i].r;if(r&&r.ml>=r.goal)streak++;else if(i===29)continue;else break}
+  $('stAvg').textContent=n0(avg)+' ml';
+  $('stHit').textContent=hit+' of '+tracked.length;
+  $('stStreak').textContent=streak;
+  $('histrange').textContent=pts[0].d.toLocaleDateString(undefined,{day:'numeric',month:'short'})+' to today';
+  $('bars').innerHTML=pts.map((p,i)=>{
+    const r=p.r,pct=r?Math.min(125,r.ml/r.goal*100)*0.8:0,cls=!r?'none':r.ml>=r.goal?'hit':'part';
+    return `<button class="bar ${cls}${selDay===i?' sel':''}" style="--h:${pct.toFixed(1)}%" onclick="selBar(${i})" aria-label="${dayText(p)}"><i></i></button>`;
+  }).join('');
+  $('barinfo').textContent=selDay!=null&&pts[selDay]?dayText(pts[selDay]):(past.length?'Tap a bar to see that day. The dashed line is your goal.':'Your history fills in day by day. Tap a bar for details.');
+}
+function selBar(i){selDay=selDay===i?null:i;histSig='';renderHist()}
+$('clearhist').onclick=()=>{
+  if(!confirm('Delete your progress history? Today\'s progress stays.'))return;
+  try{localStorage.removeItem('wr3_hist')}catch(e){}
+  selDay=null;saveHist();histSig='';renderHist();
+};
+
+/* ---------- Android app: reminders that survive the app being closed ---------- */
+/* Inside the Android app, Capacitor's Local Notifications plugin hands each reminder to Android's
+   alarm system. In a normal browser LN is null and none of this runs. */
+const NATIVE=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+const LN=NATIVE&&Capacitor.Plugins?Capacitor.Plugins.LocalNotifications:null;
+let syncTimer=null;
+function queueSync(){if(!LN)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNative,800)}
+function planFor(off){
+  if(off===0)return day.plan.filter(x=>!day.done.includes(x.id));
+  const T={plan:JSON.parse(JSON.stringify(base.plan)),settings:{...base.settings},goal:+base.settings.goal||3000,extra:0,done:new Set(),now:0,notes:[]};
+  if(off===1){const pend=ld('wr3_pend_'+dayStr(1),[]);if(pend.length)apply(T,pend)}
+  return T.plan;
+}
+async function makeChannel(){
+  await LN.createChannel({id:'water',name:'Water reminders',description:'Your drink reminders',importance:5,visibility:1,vibration:true});
+}
+async function syncNative(){
+  if(!LN)return;
+  try{
+    const perm=await LN.checkPermissions();
+    if(perm.display!=='granted')return;
+    const pend=await LN.getPending();
+    if(pend.notifications&&pend.notifications.length)await LN.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
+    const now=Date.now(),list=[];
+    for(let off=0;off<7;off++){
+      const d=new Date();d.setDate(d.getDate()+off);
+      planFor(off).forEach((x,i)=>{
+        const at=new Date(d);at.setHours(Math.floor(x.t/60)%24,x.t%60,0,0);
+        if(at.getTime()<=now+5000)return;
+        list.push({id:(off+1)*1000+i,title:'Time to drink water',body:x.ml+' ml · '+String(x.why||'Custom reminder').split(':')[0],schedule:{at,allowWhileIdle:true},channelId:'water'});
+      });
+    }
+    if(list.length)await LN.schedule({notifications:list});
+  }catch(e){}
+}
+async function nativeInit(){
+  if(!LN)return;
+  $('batt').style.display='';
+  try{
+    await makeChannel();
+    const p=await LN.checkPermissions();
+    if(p.display==='granted'){$('notif').textContent='Alerts on ✓';syncNative()}
+  }catch(e){}
+}
+
+/* ---------- alerts ---------- */
+let actx;function beep(){try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();[0,.25,.5].forEach(d=>{const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=660;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(.2,actx.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d+.2);o.start(actx.currentTime+d);o.stop(actx.currentTime+d+.22)})}catch(e){}}
+function hideBanner(){$('banner').style.display='none'}
+function showBanner(x){
+  $('banner').innerHTML=`<div class="bt">Time to drink ${x.ml} ml</div><div class="bs">${esc(x.why||'')}</div><div class="br"><button onclick="tick('${x.id}')">Drank it</button><button class="s" onclick="snz('${x.id}')">Snooze 10 min</button></div>`;
+  $('banner').style.display='block';
+}
+window.snz=id=>{snooze[id]=nowMin()+10;fired.delete(id);hideBanner()};
+function notify(x){
+  beep();try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}
+  showBanner(x);
+  if(window.Notification&&Notification.permission==='granted'){
+    try{new Notification('💧 Time to drink water',{body:`${x.ml} ml — ${x.why||''}`,tag:x.id})}
+    catch(e){try{navigator.serviceWorker.getRegistration().then(r=>r&&r.showNotification('💧 Time to drink water',{body:`${x.ml} ml`}))}catch(_){}}
+  }
+}
+$('notif').onclick=async()=>{
+  beep();
+  if(LN){
+    try{
+      const p=await LN.requestPermissions();
+      if(p.display!=='granted'){$('notif').textContent='Blocked. Allow notifications in Android settings';return}
+      await makeChannel();
+      try{const ex=await LN.checkExactNotificationSetting();if(ex.exact_alarm&&ex.exact_alarm!=='granted')await LN.changeExactNotificationSetting()}catch(e){}
+      $('notif').textContent='Alerts on ✓';syncNative();
+    }catch(e){$('notif').textContent='Could not turn on alerts'}
+    return;
+  }
+  if(!('Notification' in window)){$('notif').textContent='Sound + banner alerts on ✓';return}
+  const p=await Notification.requestPermission();
+  $('notif').textContent=p==='granted'?'Alerts on ✓':'Banner + sound only';
+};
+function check(){
+  if(day.date!==dayStr(0)){newDay();persist()}
+  const nm=nowMin();
+  day.plan.forEach(x=>{
+    if(day.done.includes(x.id))return;
+    const due=snooze[x.id]?nm>=snooze[x.id]:(nm>=x.t&&nm<x.t+10);
+    if(due&&!fired.has(x.id)){fired.add(x.id);notify(x)}
+  });
+  if(openId===null)render();
+}
+if('serviceWorker' in navigator&&location.protocol!=='file:'&&!NATIVE){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+init();
+showChat();
+render();check();setInterval(check,15000);
+nativeInit();
+</script>
+</body>
+</html>
